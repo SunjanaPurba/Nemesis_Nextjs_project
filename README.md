@@ -2,6 +2,8 @@
 
 A modern product management application built with Next.js (App Router) and NextAuth.js. Features public and protected pages, authentication (Google + credentials), and a responsive UI.
 
+# Live Link: https://nemesis-nextjs-project.vercel.app/
+
 ## Features
 
 - **Landing Page** – Hero, features, testimonials, banner, and about sections

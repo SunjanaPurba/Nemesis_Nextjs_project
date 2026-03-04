@@ -1,48 +1,25 @@
-import { connectDB } from "../../../../lib/db";
+import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 import { NextResponse } from "next/server";
 
+// GET single product
 export async function GET(req, { params }) {
-  const { id } = await params;
-
- 
-  if (id && id.startsWith("demo-")) {
-    try {
-      const numId = id.replace("demo-", "");
-      const res = await fetch(`https://fakestoreapi.com/products/${numId}`, { cache: "no-store" });
-      if (!res.ok) return NextResponse.json(null, { status: 404 });
-      const item = await res.json();
-      const c = (item.category || "").toLowerCase();
-      const priority = c.includes("electronic") || c.includes("jewel") ? "High" : c.includes("cloth") || c.includes("men") || c.includes("women") ? "Medium" : "Low";
-      return NextResponse.json({
-        _id: `demo-${item.id}`,
-        title: item.title,
-        shortDescription: (item.description || "").slice(0, 120),
-        fullDescription: item.description || "",
-        price: item.price,
-        image: item.image,
-        priority,
-        isDemo: true,
-      });
-    } catch {
-      return NextResponse.json(null, { status: 404 });
-    }
-  }
+  const { id } = params;
 
   try {
     await connectDB();
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).lean();
+    if (!product) return NextResponse.json(null, { status: 404 });
     return NextResponse.json(product);
-  } catch {
-    return NextResponse.json(null, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
+// DELETE single product
 export async function DELETE(req, { params }) {
-  const { id } = await params;
-  if (id?.startsWith("demo-")) {
-    return NextResponse.json({ error: "Demo products cannot be deleted" }, { status: 400 });
-  }
+  const { id } = params;
+
   try {
     await connectDB();
     await Product.findByIdAndDelete(id);
