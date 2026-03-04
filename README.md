@@ -37,22 +37,12 @@ A modern product management application built with Next.js (App Router) and Next
 
    Create a `.env.local` file in the root:
 
-   ```env
-   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
-   NEXTAUTH_SECRET=your-random-secret
-   NEXTAUTH_URL=http://localhost:3000
-
-   # For Google OAuth
-   GOOGLE_CLIENT_ID=your-google-client-id
-   GOOGLE_CLIENT_SECRET=your-google-client-secret
-   ```
 
 4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000)
 
 ### Production (e.g. Vercel)
 
