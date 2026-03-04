@@ -24,7 +24,7 @@ A modern product management application built with Next.js (App Router) and Next
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone
    cd productmanagement
    ```
 
@@ -42,12 +42,6 @@ A modern product management application built with Next.js (App Router) and Next
    ```bash
    npm run dev
    ```
-
-
-### Production (e.g. Vercel)
-
-- Set `NEXTAUTH_URL` to your production URL (e.g. `https://your-app.vercel.app`)
-- Ensure MongoDB Atlas allows connections from your hosting IP / Vercel
 
 ## Route Summary
 
@@ -76,7 +70,3 @@ A modern product management application built with Next.js (App Router) and Next
 ├── middleware.js     # Protects /dashboard/*
 └── .env.local        # Environment variables
 ```
-
-## License
-
-MIT
