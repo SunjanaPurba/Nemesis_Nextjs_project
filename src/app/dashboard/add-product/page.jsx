@@ -118,9 +118,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 
@@ -130,17 +129,16 @@ const errorClass = "mt-1 text-sm text-[var(--danger)]";
 
 export default function AddProductPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const [form, setForm] = useState({ title: "", shortDescription: "", fullDescription: "", price: "", priority: "Medium", image: "" });
+  const [form, setForm] = useState({
+    title: "",
+    shortDescription: "",
+    fullDescription: "",
+    price: "",
+    priority: "Medium",
+    image: ""
+  });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
-  // 🔒 Redirect if unauthenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      signIn(undefined, { callbackUrl: "/dashboard/add-product" });
-    }
-  }, [status]);
 
   const validate = () => {
     const err = {};
@@ -155,10 +153,16 @@ export default function AddProductPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) { toast.error("Please fix the errors in the form."); return; }
+    if (!validate()) {
+      toast.error("Please fix the errors in the form.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch("/api/products", {
+      // ✅ Use absolute URL from environment variable
+      const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+      const res = await fetch(`${base}/api/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -167,11 +171,12 @@ export default function AddProductPage() {
           fullDescription: form.fullDescription.trim(),
           price: parseFloat(form.price),
           priority: form.priority,
-          image: form.image.trim() || undefined,
-          userEmail: session?.user?.email,
+          image: form.image.trim() || undefined
         }),
       });
+
       if (!res.ok) throw new Error("Failed to add product");
+
       toast.success("Product added successfully!");
       setForm({ title: "", shortDescription: "", fullDescription: "", price: "", priority: "Medium", image: "" });
       setErrors({});
@@ -183,14 +188,9 @@ export default function AddProductPage() {
     }
   };
 
-  // 🔄 Loading / unauthenticated state
-  if (status === "loading") return <p className="p-8 text-center text-lg text-[var(--text-muted)]">Loading...</p>;
-  if (!session) return null; // auto redirect to login
-
   return (
     <main className="min-h-screen relative overflow-hidden">
-      {/* Background */}
-      <div 
+      <div
         className="fixed inset-0 z-[-2] bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('https://thumbs.dreamstime.com/b/empty-shopping-cart-vibrant-illuminated-urban-nighttime-setting-ai-generated-image-390455764.jpg')`,
@@ -201,7 +201,9 @@ export default function AddProductPage() {
       <div className="fixed inset-0 bg-black/65 z-[-1]" />
 
       <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
-        <Link href="/dashboard/manage-products" className="mb-6 inline-flex items-center gap-1 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent-start)]">← Manage Products</Link>
+        <Link href="/dashboard/manage-products" className="mb-6 inline-flex items-center gap-1 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent-start)]">
+          ← Manage Products
+        </Link>
 
         <h1 className="text-2xl font-bold">Add Product</h1>
         <p className="mt-1 text-[var(--text-muted)]">Add a new product to your catalog.</p>
@@ -231,7 +233,6 @@ export default function AddProductPage() {
               <input id="price" type="number" step="0.01" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={inputClass} placeholder="0.00" aria-invalid={!!errors.price} />
               {errors.price && <p className={errorClass}>{errors.price}</p>}
             </div>
-
             <div>
               <label htmlFor="priority" className={labelClass}>Priority</label>
               <select id="priority" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className={inputClass}>
@@ -251,7 +252,9 @@ export default function AddProductPage() {
             <button type="submit" disabled={loading} className="btn-accent flex-1 rounded-xl px-4 py-3 font-semibold text-white disabled:opacity-70">
               {loading ? "Adding..." : "Add Product"}
             </button>
-            <Link href="/dashboard/manage-products" className="rounded-xl border border-[var(--border)] px-4 py-3 font-medium text-[var(--text-muted)] hover:bg-white/5">Cancel</Link>
+            <Link href="/dashboard/manage-products" className="rounded-xl border border-[var(--border)] px-4 py-3 font-medium text-[var(--text-muted)] hover:bg-white/5">
+              Cancel
+            </Link>
           </div>
         </form>
       </div>
