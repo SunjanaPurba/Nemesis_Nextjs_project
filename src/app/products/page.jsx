@@ -2,30 +2,47 @@ import { Suspense } from "react";
 import { getBaseUrl } from "@/lib/api";
 import ProductsClient from "./ProductsClient";
 
+const FAKE_STORE_URL = "https://fakestoreapi.com/products";
+
+function mapToProduct(item) {
+  const desc = item.description || "";
+  return {
+    _id: `demo-${item.id}`,
+    title: item.title,
+    shortDescription: desc.length > 120 ? desc.slice(0, 120) + "..." : desc,
+    fullDescription: desc,
+    price: item.price,
+    image: item.image,
+    priority: /electronic|jewel/i.test(item.category || "") ? "High" : /cloth|men|women/i.test(item.category || "") ? "Medium" : "Low",
+  };
+}
+
+async function fetchDemoProducts() {
+  try {
+    const res = await fetch(FAKE_STORE_URL, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data.map(mapToProduct) : [];
+  } catch {
+    return [];
+  }
+}
+
 async function getProducts() {
   try {
     const base = await getBaseUrl();
-    const res = await fetch(`${base}/api/products`, { cache: "no-store" });
-    if (!res.ok) throw new Error("API error");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(`${base}/api/products`, { cache: "no-store", signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) return fetchDemoProducts();
     const text = await res.text();
-    if (!text) throw new Error("Empty response");
+    if (!text) return fetchDemoProducts();
     const products = JSON.parse(text);
     if (Array.isArray(products) && products.length > 0) return products;
-    // Fallback: fetch demo products from public API
-    const demoRes = await fetch(`${base}/api/products/demo`, { cache: "no-store" });
-    if (!demoRes.ok) return [];
-    const demo = await demoRes.json();
-    return Array.isArray(demo) ? demo : [];
+    return fetchDemoProducts();
   } catch {
-    try {
-      const base = await getBaseUrl();
-      const demoRes = await fetch(`${base}/api/products/demo`, { cache: "no-store" });
-      if (!demoRes.ok) return [];
-      const demo = await demoRes.json();
-      return Array.isArray(demo) ? demo : [];
-    } catch {
-      return [];
-    }
+    return fetchDemoProducts();
   }
 }
 
